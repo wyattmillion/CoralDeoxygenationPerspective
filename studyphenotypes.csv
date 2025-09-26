@@ -1,0 +1,31 @@
+Study,link,Maximum Quantum Yield,Effective Quantum Yield,Symbiont Cell Density,Chlorophyll Concentration,ETRmax,Ek,Bleaching Color,Chlorophyll Fluorescence,Photosynthesis Rate,Respiration Rate,Calcification,Growth Rate,Heat Tolerance,Tissue Loss,Mortality,Pc or Pcrit,Pcmax,Total Oxyregulation,Enzyme Activity,Metabolite Concentration,Protien Content,Mitochondrial Dynamics,Gene Expression,Prokaryotic Microbiome
+Alderdice et al. 2021 ,https://doi.org/10.1111/gcb.15436,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+Haas et al. 2014 ,https://doi.org/10.7717/peerj.235,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Altieri et al. 2017 ,https://doi.org/10.1073/pnas.1621517114,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0
+Alva Garia et al. 2022 ,https://doi.org/10.3389/fmars.2022.945293,1,1,1,1,0,0,1,0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0
+Lunden et al. 2014 ,https://doi.org/10.3389/fmars.2014.00078,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0
+Dodds et al. 2007 ,https://doi.org/10.1016/j.jembe.2007.05.013,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Castrillon-Ciluentes et al. 2023 ,https://peerj.com/articles/14586/,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0
+Castrillon-Ciluentes et al. 2023b ,https://www.frontiersin.org/articles/10.3389/fmars.2023.1212717/full#h3,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0
+Jain et al. 2023 ,https://doi.org/10.3390/jmse11020403 ,1,1,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0
+Pontes et al. 2023 ,https://doi.org/10.3389/fmars.2023.1120262,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0
+Murphy & Richmond 2016 ,https://peerj.com/articles/1956/,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0
+Swaminathan et al. 2024 ,https://www.frontiersin.org/articles/10.3389/fmars.2023.1301474/full,1,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1
+Kvitt et al. 2022 ,https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2022.999558/full,1,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,0
+Mallon et al. 2025,https://journals.biologists.com/jeb/article-abstract/228/4/JEB249638/367250/Sublethal-changes-to-coral-metabolism-in-response,1,0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0
+Long et al. 2024,https://peerj.com/articles/18095/,1,0,1,1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0
+Deleja et al. 2022,https://doi.org/10.3390/biology11071068,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+Zhu et al. 2004,https://link.springer.com/article/10.1007/BF03184283,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Lucey et al. 2024,https://onlinelibrary.wiley.com/doi/full/10.1111/gcb.17545,1,1,0,0,0,0,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0
+Gravinese et al. 2021,https://link.springer.com/article/10.1007/s00338-021-02197-5,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Johnson et al. 2021,https://www.nature.com/articles/s41598-021-01078-9,1,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0
+Ulstrup et al. 2005,https://www.int-res.com/abstracts/meps/v286/meps286125,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Dilernia et al. 2024,https://onlinelibrary.wiley.com/doi/full/10.1002/ece3.11100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0
+Hughes et al. 2022,https://www.sciencedirect.com/science/article/abs/pii/S0025326X22004040,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0
+Alderdice et al. 2022,https://www.nature.com/articles/s41598-022-22604-3,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0
+Zhang  et al. 2023,https://www.sciencedirect.com/science/article/pii/S0025326X23003284?casa_token=hogKBn1_K40AAAAA:eaZ9ZwEM7QD16CG0EvIDwSX6x-IkrpZyT4jJlil4_bqu_eKZO6yNr1xh1hH_KpE8R5U5WSZ1vVSR,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0
+Lucey et al. 2024b,https://www.mdpi.com/2673-1924/6/1/5,1,0,1,0,0,0,1,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0
+Howard et al. 2023,https://journals.asm.org/doi/full/10.1128/aem.00577-23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
+Linsmayer et al. 2024,https://www.sciencedirect.com/science/article/pii/S0048969724008921,0,0,1,1,0,0,1,0,1,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+Gori et al. 2023,https://www.sciencedirect.com/science/article/pii/S0967063723000912,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Linsmayer et al. 2020,https://www.nature.com/articles/s41598-020-76828-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0
