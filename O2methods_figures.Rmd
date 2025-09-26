@@ -1,0 +1,316 @@
+---
+title: 'Analysis and Plotting: Standardizing deoxygenation studies in coral biology'
+author: "Wyatt C. Million"
+date: "2025-09-18"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview 
+
+This is the code used to produce figures and underlying respirometry analysis used for **Million et al. Standardizing deoxygenation studies in coral biology**. Data is available at  <https://github.com/wyattmillion/CoralDeoxygenationPerspective>.
+
+```{r setup 2,echo=F,warning=F,include=F}
+setwd("C:/Users/162306/Desktop/O2Perspective")
+
+library(tidyverse)
+library(drc)
+library(svglite)
+library(respirometry)
+```
+
+## Figure 1. Number of peer-reviewed publications in coal deoxygenation and hypoxia
+
+```{r Figure 1,warning=F}
+
+###Plot of number of publications
+pubs<-read.csv("./Data/num_of_pubs.csv",header=T) #summary of filtered Web of Science search results
+
+ggplot(pubs,aes(x=Year,y=No..Publications))+
+  geom_bar(stat = "identity", fill="#43B7D1",alpha=.5)+
+  geom_smooth(aes(x=Year,y=No..Publications), method="lm",formula = y~poly(x,2),se=FALSE,color="#43B7D1",size=1.75,linetype="dashed")+
+  theme_classic()+labs(y="Number of Publications",x="Year")+
+  theme(text=element_text(size=16,  family="Arial", face="bold"))
+```
+
+## Figure 3. Comparing analyses for critical phenotypes
+
+Figures  3A and 3B were generated in Biorender and represent theoretical applications of the regulation-based critical phenotypes (P~cmax~, T~pos~) and break-point based critical phenotypes (P~crit~). Figure 3C and 3D are based on real data from Hughes *et al.* 2022 analyses with the two approaches; breakpoint and regulation-based. The plots are generated here then touched in Biorender for inclusion in the manuscript. 
+
+Generating Hypoxia Response Curves (HRCs) with the more traditional HRC shape which is seen in *P. lutea*.
+
+```{r Figure 3 - Traditional HRC,warning=F}
+
+dat<-read.csv("./Data/Plutea_r3.csv", header=T)
+colnames(dat)<-c("Seconds","Minutes","PO2","O2","VO2")
+
+#Fit MM curve to data
+linearMod<- lm(VO2~PO2,data = dat)
+mMod <- drm(VO2~PO2, data = dat, fct = MM.2()) #modeling the Michaelis Menton Model
+poly3<-lm(VO2 ~ 0 + PO2 + I(PO2^2) + I(PO2^3),data=dat) #Modeling a 3rd order polynomial
+
+
+# Create a data frame of predicted values (calculating the data points to make the "MM Line")
+MMLine <- data.frame(PO2 = seq(0, max(dat$PO2), length.out = 100)) 
+MMLine$VO2 <- predict(mMod, newdata = MMLine) 
+summary(mMod)
+
+polyLine<-data.frame(PO2 = seq(0, max(dat$PO2), length.out = 100)) 
+polyLine$VO2 <- predict(poly3, newdata = polyLine)
+summary(poly3)
+
+# Calculate SSR (Sum of Squares Residuals)
+sum(resid(mMod)^2) 
+sum(resid(linearMod)^2) 
+sum(resid(poly3)^2)
+
+# Calculate & show the AIC of the model  
+AIC(object = linearMod, k = 1) 
+AIC(object = mMod, k = 2)
+AIC(object = poly3, k = 3)
+
+#create the line for the oxyconformer (null) setting the max VO2 of the data to the max of the oxyconformity line
+testNull<-data.frame(PO2=MMLine$PO2)
+dat2<-na.omit(dat)
+testNull$VO2<-testNull$PO2*((MMLine[which.max(MMLine$PO2),2]-0)/max(MMLine$PO2)) #constant rate of decrease in VO2
+
+#plotting Vo2 rates just to view and make sure points line up
+ggplot(data=dat,aes(x=PO2,y=VO2))+
+  geom_point()+
+  geom_line(data=MMLine,color="red")+
+  geom_line(data=polyLine,color="darkgreen")+
+  geom_line(data=testNull,color="skyblue")
+
+```
+
+For this *P. lutea* HRC, the Michaelis Menton model fits best. Identifying this will be useful for applying the regulation-based analysis and for seeing in what situations the traditional breakpoint models of P~crit~ will likely produce similar values to P~cmax~
+
+Calculating P~cmax~ and P~crit~
+```{r, warning=F}
+#A=d and H=e
+A=mMod$coefficients[[1]] #estimates of coefficients are pulled directly from model
+H=mMod$coefficients[[2]]
+
+results <- data.frame(PO2 = numeric(0), Rho = numeric(0))
+
+# Calculate values for pO2 from 1 to 100 and save to results df
+for (PO2 in seq(0,max(dat$PO2),length.out=200)) {
+  Rho <- A * (PO2 / (H + PO2)^2)
+  results <- rbind(results, data.frame(PO2 = PO2, Rho = Rho))
+}
+
+# Summary of results
+head(results)
+Pcmax=results$PO2[which.max(results$Rho)]
+Pcmax
+ 
+
+
+##Applying the breakpoint analysis from the respirometry package
+dat2<-dat[complete.cases(dat$VO2),]
+pcritMod<-calc_pcrit(po2 = dat2$PO2,mo2 = dat2$VO2, method = "All",return_models = T)
+plot_pcrit(po2 = dat2$PO2,mo2 = dat2$VO2, method = "Breakpoint")
+
+
+#improved plot for manuscript figure
+MO2inter<-pcritMod$breakpoint_params["MO2 intercept"]
+pcrit<-pcritMod$breakpoint_params["PO2 breakpoint"]
+slope1<-pcritMod$breakpoint_params["Oxyconforming slope"]
+slope2<-pcritMod$breakpoint_params["Oxyregulating slope"]
+
+plot1<-ggplot(data=dat,aes(x=PO2,y=VO2))+
+  geom_point(shape=21,fill="grey",size=5)+
+  geom_segment(aes(x=Pcmax, xend=Pcmax, y=0,yend=.275), size=1, color="salmon")+ #Pcmax
+  geom_segment(aes(x= pcrit, xend= pcrit, y=0,yend=(pcrit*slope1)+MO2inter),size=1,color="forestgreen")+ #broken stick
+  #geom_segment(aes(x=9.232, xend=9.232, y=0,yend=.1),color="red")+ #alpha pcrit
+  #geom_segment(aes(x=13.53, xend=13.53, y=0,yend=.125),color="skyblue")+ #nlr
+  geom_segment(aes(x=MO2inter,xend=pcrit,y=0,yend=(pcrit*slope1)+MO2inter),size=1,color="forestgreen")+ #for broken stick model
+  geom_segment(aes(x=pcrit,y=(pcrit*slope1)+MO2inter,xend=max(dat$PO2),yend=(100*slope2)+((pcrit*slope1)+MO2inter)),size=1,color="forestgreen")+ #broken stick model
+  geom_line(data=MMLine,color="red",size=1)+
+  geom_line(data=testNull,color="grey", linetype="dotted",size=1.25)+
+  ylim(0,.3)+
+  theme_classic()
+
+
+plot1
+ggsave("./Figures/Plueta_r3_pcrit.svg",plot1,device="svg")
+```
+
+Now we can do the same for *H. rigida* which tend to follow a non-traditional HRC.
+
+
+```{r Figure 3 - Non-traditional HRC,warning=F}
+
+dat<-read.csv("./Data/Hrigida_r3.csv", header=T)
+colnames(dat)<-c("Seconds","Minutes","PO2","O2","VO2")
+
+#Fit MM curve to data
+linearMod<- lm(VO2~PO2,data = dat)
+mMod <- drm(VO2~PO2, data = dat, fct = MM.2()) #modeling the Michaelis Menton Model
+poly3<-lm(VO2 ~ 0 + PO2 + I(PO2^2) + I(PO2^3),data=dat) #Modeling a 3rd order polynomial
+
+
+# Create a data frame of predicted values (calculating the data points to make the "MM Line")
+MMLine <- data.frame(PO2 = seq(0, max(dat$PO2), length.out = 100)) 
+MMLine$VO2 <- predict(mMod, newdata = MMLine) 
+summary(mMod)
+
+polyLine<-data.frame(PO2 = seq(0, max(dat$PO2), length.out = 100)) 
+polyLine$VO2 <- predict(poly3, newdata = polyLine)
+summary(poly3)
+
+# Calculate SSR (Sum of Squares Residuals)
+sum(resid(mMod)^2) 
+sum(resid(linearMod)^2) 
+sum(resid(poly3)^2)
+
+# Calculate & show the AIC of the model  
+AIC(object = linearMod, k = 1) 
+AIC(object = mMod, k = 2)
+AIC(object = poly3, k = 3)
+
+#create the line for the oxyconformer (null) setting the max VO2 of the data to the max of the oxyconformity line
+testNull<-data.frame(PO2=MMLine$PO2)
+dat2<-na.omit(dat)
+testNull$VO2<-testNull$PO2*((MMLine[which.max(MMLine$PO2),2]-0)/max(MMLine$PO2)) #constant rate of decrease in VO2
+
+#plotting Vo2 rates just to view and make sure points line up
+ggplot(data=dat,aes(x=PO2,y=VO2))+
+  geom_point()+
+  geom_line(data=MMLine,color="red")+
+  geom_line(data=polyLine,color="darkgreen")+
+  geom_line(data=testNull,color="skyblue")
+
+```
+
+For this *H. rigida* HRC, the 3^rd^ order polynomial (constrained cubic model passing through origin) fits best. This will be helpful when applying the regulation-based analysis. Compared to the *P. lutea*, the HRC will have oxyregulation but only after a period of oxyconformity/metabolic depression. This breaks the assumptions of the break-point analysis that relies on fitting two linear models who's intersection marks the Pcrit.
+
+
+Calculating P~cmax~ and P~crit~
+
+```{r,warning=F}
+#A=d and H=e
+A=mMod$coefficients[[1]] #estimates of coefficients are pulled directly from model
+H=mMod$coefficients[[2]]
+
+results <- data.frame(PO2 = numeric(0), Rho = numeric(0))
+
+# Calculate values for pO2 from 1 to 100 and save to results df
+for (PO2 in seq(0,max(dat$PO2),length.out=200)) {
+  Rho <- A * (PO2 / (H + PO2)^2)
+  results <- rbind(results, data.frame(PO2 = PO2, Rho = Rho))
+}
+
+# Summary of results
+head(results)
+Pcmax=results$PO2[which.max(results$Rho)]
+Pcmax
+ 
+
+
+##Applying the breakpoint analysis from the respirometry package
+dat2<-dat[complete.cases(dat$VO2),]
+pcritMod<-calc_pcrit(po2 = dat2$PO2,mo2 = dat2$VO2, method = "All",return_models = T)
+plot_pcrit(po2 = dat2$PO2,mo2 = dat2$VO2, method = "Breakpoint")
+
+
+#improved plot for manuscript figure
+MO2inter<-pcritMod$breakpoint_params["MO2 intercept"]
+pcrit<-pcritMod$breakpoint_params["PO2 breakpoint"]
+slope1<-pcritMod$breakpoint_params["Oxyconforming slope"]
+slope2<-pcritMod$breakpoint_params["Oxyregulating slope"]
+
+plot1<-ggplot(data=dat,aes(x=PO2,y=VO2))+
+  geom_point(shape=21,fill="grey",size=5)+
+  geom_segment(aes(x=Pcmax, xend=Pcmax, y=0,yend=.275), size=1, color="salmon")+ #Pcmax
+  geom_segment(aes(x= pcrit, xend= pcrit, y=0,yend=(pcrit*slope1)+MO2inter),size=1,color="forestgreen")+ #broken stick
+  #geom_segment(aes(x=9.232, xend=9.232, y=0,yend=.1),color="red")+ #alpha pcrit
+  #geom_segment(aes(x=13.53, xend=13.53, y=0,yend=.125),color="skyblue")+ #nlr
+  geom_segment(aes(x=MO2inter,xend=pcrit,y=0,yend=(pcrit*slope1)+MO2inter),size=1,color="forestgreen")+ #for broken stick model
+  geom_segment(aes(x=pcrit,y=(pcrit*slope1)+MO2inter,xend=max(dat$PO2),yend=(100*slope2)+((pcrit*slope1)+MO2inter)),size=1,color="forestgreen")+ #broken stick model
+  geom_line(data=MMLine,color="red",size=1)+
+  geom_line(data=testNull,color="grey", linetype="dotted",size=1.25)+
+  ylim(0,.4)+
+  theme_classic()
+
+
+plot1
+ggsave("./Figures/Hrigida_r3_pcrit.svg",plot1,device="svg")
+```
+
+
+## Figure 4. Hypoxia phenotypes measured in deoxygenation studies
+```{r Figure 4,warning=F}
+###Grid of which studies targeted which traits
+phenos<-read.csv("./Data/studyphenotypes.csv",header=T)
+names(phenos)<- gsub("\\."," ",names(phenos)) #replaces spaces that R replaces with decimal points when importing df
+
+#Pivot longer to more easily add present absense column
+  phenoLong<-pivot_longer(phenos,3:26,names_to = "trait", values_to = "counts")
+
+#This classifies the traits into broader categories for coloring 
+  phenoLong$Type<-case_when(phenoLong$trait %in% c("Maximum Quantum Yield","Effective Quantum Yield","ETRmax","Ek")~"Photochemical",
+                            phenoLong$trait %in% c("Bleaching Color","Chlorophyll Concentration","Chlorophyll Fluorescence","Symbiont Cell Density","")~"Bleaching",
+                            phenoLong$trait %in% c("Photosynthesis Rate","Respiration Rate","Pc or Pcrit", "Calcification","Heat Tolerance","Pcmax",'Total Oxyregulation',"Growth Rate", "Tissue Loss","Mortality")~"Holobiont Physiology",
+                            phenoLong$trait %in% c("Enzyme Activity","Metabolite Concentration","Mitochondrial Dynamics","Protien Content","Gene Expression","Prokaryotic Microbiome")~"Molecular/Biochemical")
+
+#Set the order to plot in the desired order
+  phenoLong$Type<-factor(phenoLong$Type,ordered = T, levels=c("Photochemical","Bleaching","Molecular/Biochemical","Holobiont Physiology"))
+  phenoLong <- phenoLong %>% arrange(Type, trait) %>% mutate(trait=factor(trait, levels=unique(trait)))
+
+#Tally the studies which contain each trait
+  trait_counts <- phenoLong %>%
+    filter(counts == 1) %>%
+    count(trait, name = "n")
+
+#Reuse trait factor levels from the main data (important for alignment)
+trait_counts$trait <- factor(trait_counts$trait, levels = levels(phenoLong$trait))
+
+#Final plot with geom_tile colored by presence/absence and trait category
+p<-ggplot(phenoLong,aes(trait, Study,fill=Type,alpha=counts))+
+  geom_tile(colour= "gray50")+
+  geom_text(
+    data = trait_counts,
+    aes(x = trait, y = Inf, label = n),
+    inherit.aes = FALSE,
+    vjust = -.5) +
+  scale_alpha_identity(guide="none")+
+  scale_fill_manual(values = c("#64D473","#E3CE94","#478ED1","#AD8530"))+ 
+  scale_x_discrete(expand = c(5, 4))+ 
+  scale_y_discrete(expand = c(0, 0))+
+  coord_equal(expand=0,clip="off")+
+  labs(x="Phenotype")+
+  theme(panel.grid.major = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.margin = margin(20, 10,10, 10),
+        text=element_text(size=16, family="Arial"))
+p
+ggsave("./Figures/phenotypegrid.svg",p,device="svg")
+
+```
+
+##Figure 5. Variation in Experimental Deoxygenation Exposures
+
+```{r,warning=F}
+dat<-read.csv("./Data/HypoxiaThresholdsSummary.csv",header=T)
+p2<-ggplot(dat,aes(x=Days, y=DO,shape= Design))+
+  geom_point(size=4,aes(color=Study),stroke=1.5)+
+  scale_shape_manual(values=c(1,19))+
+  scale_color_manual(values = c("#f3c300","#875692","#a1caf1","#be0032","#c2b280","#848482","#008856","#e68fac","#0067a5",
+                                "#f99379","#604e97","#f6a600","#b3446c","#dcd300","#882d17","#8db600","#654522","#3b3d26","lightgrey") )+
+  theme_bw()+
+  theme(text=element_text(size=16, family="Arial"))+
+  labs(y=expression("Deoxygenation Intensity - [DO] in mg "~ O[2]~ L^"-1"),
+       x="Duration in Days")
+
+p2
+ggsave("./Figures/deox_exposures.png",p2,width = 9, height = 6.5, dpi = 300, device="png")
+```
+
+
+
